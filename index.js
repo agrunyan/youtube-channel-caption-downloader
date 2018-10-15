@@ -32,22 +32,17 @@ function run(channelName) {
 
     if(Array.isArray(videoList)) {
       for (var itemID of videoList) {
-
-        getSubtitles({
-          videoID: itemID
-        }).then(function(captions) {
-          return console.log(captions);
-        }, (reason) => {
-          return console.log(reason + "\n");
-        });
+        // Print each ID to the console
+        // This is where the captions need to be pulled
+        console.log(itemID);
       }
 
     } else {
-      console.log("Expecting an array, but didn't get one.");
+      return console.log("Expecting an array, but didn't get one.");
     }
 
-  }, (reason) => {
-    console.log(reason + "\n");
+  }, (err) => {
+    return console.log(err);
   });
 
 }
