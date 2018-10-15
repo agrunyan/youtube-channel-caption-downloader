@@ -1,0 +1,14 @@
+{
+  "name": "youtube-channel-caption-downloader",
+  "version": "1.0.0",
+  "description": "Enter a YouTube channel and it will bulk download all caption files for every video on that channel.",
+  "main": "index.js",
+  "repository": "https://github.com/agrunyan/youtube-channel-caption-downloader.git",
+  "author": "Alex Runyan <alex@runyan.co>",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "sbv": "^1.0.1",
+    "yt-channel-videos": "^1.1.0"
+  }
+}
