@@ -2,6 +2,27 @@
 # yarn lockfile v1
 
 
+"@joegesualdo/get-youtube-subtitle-url-node@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@joegesualdo/get-youtube-subtitle-url-node/-/get-youtube-subtitle-url-node-0.1.0.tgz#79a43866e88769c6d4864cc374629d0dcc99e9b1"
+  integrity sha512-ZmCgSeFYgdYZWhkUWBP5QVXBKRS3PCEdJPVWwYS3owkxxIA10U1Ut8U0fA+lz4SSFn1pk3oHQECbWF69XlE4BA==
+  dependencies:
+    app-root-path "^2.0.1"
+    format-json "^1.0.3"
+    json-beautify "^1.0.1"
+    loud-rejection "^1.6.0"
+    python-shell "^0.4.0"
+
+"@joegesualdo/get-youtube-subtitles-node@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@joegesualdo/get-youtube-subtitles-node/-/get-youtube-subtitles-node-0.1.0.tgz#b24e6ffd7dfdbb00f08aa7135cd88ad3340c8787"
+  integrity sha512-2X1KKk8Z9pyajw0t6XHeX7NYMwztro96WxtPqHsNkiA5uSriIiUXjfoHPCif3ZdbW7SNRa256pDj/nwrno9byQ==
+  dependencies:
+    "@joegesualdo/get-youtube-subtitle-url-node" "0.1.0"
+    reqwest "^2.0.5"
+    vtt-to-json "0.1.1"
+    xhr2 "^0.1.3"
+
 ajv@^5.3.0:
   version "5.5.2"
   resolved "https://registry.yarnpkg.com/ajv/-/ajv-5.5.2.tgz#73b5eeca3fab653e3d3f9422b341ad42205dc965"
@@ -21,6 +42,16 @@ ansi-styles@^2.2.1:
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/ansi-styles/-/ansi-styles-2.2.1.tgz#b432dd3358b634cf75e1e4664368240533c1ddbe"
   integrity sha1-tDLdM1i2NM914eRmQ2gkBTPB3b4=
+
+app-root-path@^2.0.1:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/app-root-path/-/app-root-path-2.1.0.tgz#98bf6599327ecea199309866e8140368fd2e646a"
+  integrity sha1-mL9lmTJ+zqGZMJhm6BQDaP0uZGo=
+
+array-find-index@^1.0.1:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/array-find-index/-/array-find-index-1.0.2.tgz#df010aa1287e164bbda6f9723b0a96a1ec4187a1"
+  integrity sha1-3wEKoSh+Fku9pvlyOwqWoexBh6E=
 
 asn1@0.1.11:
   version "0.1.11"
@@ -231,6 +262,13 @@ ctype@0.5.3:
   resolved "https://registry.yarnpkg.com/ctype/-/ctype-0.5.3.tgz#82c18c2461f74114ef16c135224ad0b9144ca12f"
   integrity sha1-gsGMJGH3QRTvFsE1IkrQuRRMoS8=
 
+currently-unhandled@^0.4.1:
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/currently-unhandled/-/currently-unhandled-0.4.1.tgz#988df33feab191ef799a61369dd76c17adf957ea"
+  integrity sha1-mI3zP+qxke95mmE2nddsF635V+o=
+  dependencies:
+    array-find-index "^1.0.1"
+
 dashdash@^1.12.0:
   version "1.14.1"
   resolved "https://registry.yarnpkg.com/dashdash/-/dashdash-1.14.1.tgz#853cfa0f7cbe2fed5de20326b8dd581035f6e2f0"
@@ -315,6 +353,11 @@ form-data@~2.3.2:
     asynckit "^0.4.0"
     combined-stream "1.0.6"
     mime-types "^2.1.12"
+
+format-json@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/format-json/-/format-json-1.0.3.tgz#268e3d3e169792ff49bb5b030f22c87ca1c2cd9f"
+  integrity sha1-Jo49PhaXkv9Ju1sDDyLIfKHCzZ8=
 
 fs@0.0.1-security:
   version "0.0.1-security"
@@ -554,6 +597,11 @@ jsbn@~0.1.0:
   resolved "https://registry.yarnpkg.com/jsbn/-/jsbn-0.1.1.tgz#a5e654c2e5a2deb5f201d96cefbca80c0ef2f513"
   integrity sha1-peZUwuWi3rXyAdls77yoDA7y9RM=
 
+json-beautify@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/json-beautify/-/json-beautify-1.0.1.tgz#598b50d4c8ea9b8fca5abbb40b7e2cbd3ad4c2fc"
+  integrity sha1-WYtQ1Mjqm4/KWru0C34svTrUwvw=
+
 json-schema-traverse@^0.3.0:
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/json-schema-traverse/-/json-schema-traverse-0.3.1.tgz#349a6d44c53a51de89b40805c5d5e59b417d3340"
@@ -627,6 +675,14 @@ lodash@^4.17.10:
   version "4.17.11"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.11.tgz#b39ea6229ef607ecd89e2c8df12536891cac9b8d"
   integrity sha512-cQKh8igo5QUhZ7lg38DYWAxMvjSAKG0A8wGSVimP07SIUEK2UO+arSRKbRZWtelMtN5V0Hkwh5ryOto/SshYIg==
+
+loud-rejection@^1.6.0:
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/loud-rejection/-/loud-rejection-1.6.0.tgz#5b46f80147edee578870f086d04821cf998e551f"
+  integrity sha1-W0b4AUft7leIcPCG0Eghz5mOVR8=
+  dependencies:
+    currently-unhandled "^0.4.1"
+    signal-exit "^3.0.0"
 
 map-obj@^1.0.0:
   version "1.0.1"
@@ -738,6 +794,11 @@ punycode@^1.4.1:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-1.4.1.tgz#c0d5a63b2718800ad8e1eb0fa5269c84dd41845e"
   integrity sha1-wNWmOycYgArY4esPpSachN1BhF4=
+
+python-shell@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/python-shell/-/python-shell-0.4.0.tgz#259c5470d885292b22e906a57b085f651752f956"
+  integrity sha1-JZxUcNiFKSsi6QalewhfZRdS+VY=
 
 qs@~3.1.0:
   version "3.1.0"
@@ -871,6 +932,11 @@ request@~2.74.0:
     tough-cookie "~2.3.0"
     tunnel-agent "~0.4.1"
 
+reqwest@^2.0.5:
+  version "2.0.5"
+  resolved "https://registry.yarnpkg.com/reqwest/-/reqwest-2.0.5.tgz#00fb15ac4918c419ca82b43f24c78882e66039a1"
+  integrity sha1-APsVrEkYxBnKgrQ/JMeIguZgOaE=
+
 safe-buffer@^5.0.1, safe-buffer@^5.1.2:
   version "5.1.2"
   resolved "https://registry.yarnpkg.com/safe-buffer/-/safe-buffer-5.1.2.tgz#991ec69d296e0313747d59bdfd2b745c35f8828d"
@@ -887,6 +953,11 @@ sbv@^1.0.1:
   integrity sha512-1SaQvarb5f+M7R321tLNzcCst5vzel1UkUJIC16oePZ4OoKi5KZv7zzPsatOHlVWIb97h5zqr+11N/mSbpwxMA==
   dependencies:
     fs "0.0.1-security"
+
+signal-exit@^3.0.0:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-3.0.2.tgz#b5fdc08f1287ea1178628e415e25132b73646c6d"
+  integrity sha1-tf3AjxKH6hF4Yo5BXiUTK3NkbG0=
 
 sntp@1.x.x:
   version "1.0.9"
@@ -992,6 +1063,16 @@ verror@1.10.0:
     assert-plus "^1.0.0"
     core-util-is "1.0.2"
     extsprintf "^1.2.0"
+
+vtt-to-json@0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/vtt-to-json/-/vtt-to-json-0.1.1.tgz#a67bb276a0f245bd4d71267014028b65b1f465a8"
+  integrity sha1-pnuydqDyRb1NcSZwFAKLZbH0Zag=
+
+xhr2@^0.1.3:
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/xhr2/-/xhr2-0.1.4.tgz#7f87658847716db5026323812f818cadab387a5f"
+  integrity sha1-f4dliEdxbbUCYyOBL4GMras4el8=
 
 xtend@^4.0.0:
   version "4.0.1"
