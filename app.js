@@ -5,16 +5,15 @@ let channelVideos = require("yt-channel-videos")('AIzaSyCY7gLGo-iqtU6N2XsbKNA4mr
 let getYoutubeSubtitles = require("@joegesualdo/get-youtube-subtitles-node");
 let cacheCore = require("flat-cache");
 let cache = cacheCore.load("collection");
-let senti = require('senti');
 const EventEmitter = require("events");
 const util = require("util");
 
 /**
  * App Settings
  */
-let videoNumberLimit = 5;
+let videoNumberLimit = 13;
 // PowerfulJRE, presonusaudio, MichaelSealey, PowerfulJRE or SpectreSoundStudios
-let channelName = "MichaelSealey"; 
+let channelName = "SpectreSoundStudios"; 
 
 /**
  * YouTube Channel Query
@@ -54,7 +53,7 @@ function queryYoutube() {
 /**
  * Caption Query
  */
-function captionQuery(videoListArray) {
+function captionQuery(videoListArray, callBack) {
   console.log("Requesting captions..." + "\n");
 
   let wordArray = [];
@@ -71,17 +70,20 @@ function captionQuery(videoListArray) {
         }
       }
 
-      // Setup the cache
-      cache.setKey("captions", { words: wordArray });
-      // Update the cache each round of iteration
-      cache.save( true );      
-      // Finished collecting words
-      EventNotifier.emit("word-list-complete");
+      // For each round
+      console.log("So far " + wordArray.length + " words have been found."); 
 
     }, (err) => {
       console.log("Error: " + err);
-    });
+    })
+    .then(_ => new Promise(resolve =>
+      setTimeout(function () {
+        resolve();
+      }, Math.random() * 1000)
+    ));
   }
+
+  callBack(wordArray);
 }
 
 async function init() {
@@ -105,29 +107,15 @@ function Notifier() {
   EventEmitter.call(this);
 }
 
-let logSenti = function(val) {
-  console.log(val);
-}
-
 const EventNotifier = new Notifier();
 
 // Wait for the fun
-EventNotifier.on("ready-for-analysis", () => {
-  senti(cache.getKey("captions").words, logSenti);
-});
-
 EventNotifier.on("video-list-complete", () => {
   let list = cache.getKey("video-ids");
-  captionQuery(list);
+
+  captionQuery(list, function(wordArray) {
+    console.log( wordArray );
+  });
+
 });  
 
-EventNotifier.on("word-list-complete", () => {
-  let captionCollection = cache.getKey("captions");
-  let wordCount = captionCollection.words.length;
-
-  console.log("So far " + wordCount + " words have been found.");
-});
-
-console.log("Time to analyze for sentiment...");
-
-return EventNotifier.emit("ready-for-analysis");
