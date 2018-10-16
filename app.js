@@ -3,35 +3,51 @@
  */
 let channelVideos = require("yt-channel-videos")('AIzaSyCY7gLGo-iqtU6N2XsbKNA4mrmZPG02MI8');
 let getYoutubeSubtitles = require("@joegesualdo/get-youtube-subtitles-node");
-let cacheCore = require('flat-cache')
-let cache = cacheCore.load('collection');
-const EventEmitter = require('events');
-const util = require('util');
+let cacheCore = require("flat-cache");
+let cache = cacheCore.load("collection");
+const EventEmitter = require("events");
+const util = require("util");
 
 /**
  * App Settings
  */
-let videoNumberLimit = 10;
-let channelName = "MichaelSealey"; // PowerfulJRE, presonusaudio, MichaelSealey, PowerfulJRE or SpectreSoundStudios
+let videoNumberLimit = 3;
+// PowerfulJRE, presonusaudio, MichaelSealey, PowerfulJRE or SpectreSoundStudios
+let channelName = "MichaelSealey"; 
 
 /**
  * Event Handlers
  */
+const EventNotifier = new Notifier();
+
 function Notifier() {
   EventEmitter.call(this);
 }
-util.inherits(Notifier, EventEmitter);
-const EventNotifier = new Notifier();
 
 /**
  * Utilities
  */
+function once(fn, context) { 
+	var result;
 
+	return function() { 
+		if(fn) {
+			result = fn.apply(context || this, arguments);
+			fn = null;
+		}
+
+		return result;
+	};
+}
+
+util.inherits(Notifier, EventEmitter);
 
 /**
  * YouTube Channel Query
  */
 function queryYoutube() {
+  console.log("\n" + "Requesting videos from " + channelName + "...");
+
   channelVideos.allUploads(channelName)
   .then((videos) => {
 
@@ -42,20 +58,20 @@ function queryYoutube() {
       if(videoNumberLimit != 0 && i < videoNumberLimit) {
         // Build an array of the video watch IDs
         videoList.push(videoItem.snippet.resourceId.videoId);
-        EventNotifier.emit("video-added");
-        console.log("Added: " + videoItem.snippet.title);
         i++; // Only count videos we find an ID for
       }
     }
 
+    // Clear the cache
+    cacheCore.clearCacheById("collection");
     // Store the watch ids
     cache.setKey("video-ids", { ids: videoList });
     // All done now
-    console.log("\n" + i + "YouTube videos added from channel..." + "\n");
+    console.log("Success! " + i + " videos added from channel." + "\n");
     // Save the new array
     cache.save( true );
     // Bye now
-    return EventNotifier.emit('video-list-complete');
+    return EventNotifier.emit("video-list-complete");
 
   }, (err) => {
     // Rejected
@@ -69,11 +85,11 @@ function queryYoutube() {
 function captionQuery(videoListArray) {
   console.log("Requesting captions...");
 
+  let wordArray = [];
+
   for(let id of videoListArray.ids) {
     getYoutubeSubtitles(id, {type: "auto"})
     .then((data) => {
-  
-      let wordArray = [];
 
       for(let captions of data) {
         for(let wordAndTime of captions.words) {
@@ -83,39 +99,46 @@ function captionQuery(videoListArray) {
         }
       }
 
-    // Cache
-    cache.setKey("captions", { words: wordArray });
-    cache.save( true );
+      // Setup the cache
+      cache.setKey("captions", { words: wordArray });
+
+      // Update the cache each round of iteration
+      cache.save( true );      
   
     }, (err) => {
       console.log("Error: " + err);
     });
   }
 
-  // Done
+  let wordCount = cache.getKey("captions").words.length;
+  console.log("Success! " + wordCount + " words found." + "\n");
+
+  // Finished collecting words
   return EventNotifier.emit("word-list-complete");
 }
 
+let cleanCacheOnce = once(function() {
+  return cacheCore.clearAll();
+});
+
 async function init() {
-  console.log("\n" + "Calling " + channelName + "'s YouTube Channel for their last" + videoNumberLimit + "videos..." + "\n");
-  cacheCore.clearCacheById("collection"); // Clear the cache
+  cleanCacheOnce();
   return await queryYoutube();
 }
 
 /**
- * Run
+ * App Initialization
  */
 init();
 
+// Wait for the fun
 EventNotifier.on("video-list-complete", () => {
-  let videos = cache.getKey("video-ids");
-  captionQuery(videos);
+  let list = cache.getKey("video-ids");
+  return captionQuery(list);
 });  
 
 EventNotifier.on("word-list-complete", () => {
-  let captions = cache.getKey("captions");
-  let wordCount = captions.words.length;
-
-  console.log(wordCount + "" + "\n");
-  console.log(captions.words + "\n"); // Generally followed by errors printed to the console, if any
-});  
+  let cap = cache.getKey("captions");
+  console.log(cap.words);
+  return cacheCore.clearCacheById("collection");
+});
