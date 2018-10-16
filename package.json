@@ -9,6 +9,7 @@
   "private": true,
   "dependencies": {
     "@joegesualdo/get-youtube-subtitles-node": "^0.1.0",
+    "flat-cache": "^1.3.0",
     "sbv": "^1.0.1",
     "yt-channel-videos": "^1.1.0"
   }
