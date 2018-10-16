@@ -11,6 +11,7 @@
     "@joegesualdo/get-youtube-subtitles-node": "^0.1.0",
     "flat-cache": "^1.3.0",
     "sbv": "^1.0.1",
+    "senti": "^0.0.2",
     "yt-channel-videos": "^1.1.0"
   }
 }

@@ -1024,7 +1024,7 @@ repeating@^1.1.0:
   dependencies:
     is-finite "^1.0.0"
 
-request@^2.54.0, request@^2.72.0:
+request@^2.40.0, request@^2.54.0, request@^2.72.0:
   version "2.88.0"
   resolved "https://registry.yarnpkg.com/request/-/request-2.88.0.tgz#9c2fca4f7d35b592efe57c7f0a55e81052124fef"
   integrity sha512-NAqBSrijGLZdM0WZNsInLJpkJokL72XYjUpnB0iwsRgxh7dB6COrHnTBNwN0E+lHDAJzu7kLAkDeY08z2/A0hg==
@@ -1130,6 +1130,13 @@ sbv@^1.0.1:
   integrity sha512-1SaQvarb5f+M7R321tLNzcCst5vzel1UkUJIC16oePZ4OoKi5KZv7zzPsatOHlVWIb97h5zqr+11N/mSbpwxMA==
   dependencies:
     fs "0.0.1-security"
+
+senti@^0.0.2:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/senti/-/senti-0.0.2.tgz#8fb3da936c1d6edb26f87cde6daf399116da83ae"
+  integrity sha1-j7Pak2wdbtsm+Hzeba85kRbag64=
+  dependencies:
+    request "^2.40.0"
 
 signal-exit@^3.0.0:
   version "3.0.2"
