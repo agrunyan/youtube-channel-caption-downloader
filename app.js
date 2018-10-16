@@ -1,44 +1,61 @@
 /**
  * Import the other Node packages
  */
-var channelVideos = require("yt-channel-videos")('AIzaSyCY7gLGo-iqtU6N2XsbKNA4mrmZPG02MI8');
-var getYoutubeSubtitles = require("@joegesualdo/get-youtube-subtitles-node");
-var flatCache = require('flat-cache')
-var cache = flatCache.load('cacheId');
+let channelVideos = require("yt-channel-videos")('AIzaSyCY7gLGo-iqtU6N2XsbKNA4mrmZPG02MI8');
+let getYoutubeSubtitles = require("@joegesualdo/get-youtube-subtitles-node");
+let cacheCore = require('flat-cache')
+let cache = cacheCore.load('collection');
+const EventEmitter = require('events');
+const util = require('util');
 
 /**
  * App Settings
  */
-var videoNumberLimit = 3;
-var channelName = "PowerfulJRE"; // PowerfulJRE or SpectreSoundStudios
+let videoNumberLimit = 10;
+let channelName = "MichaelSealey"; // PowerfulJRE, presonusaudio, MichaelSealey, PowerfulJRE or SpectreSoundStudios
 
-function queryVideosList() {
+/**
+ * Event Handlers
+ */
+function Notifier() {
+  EventEmitter.call(this);
+}
+util.inherits(Notifier, EventEmitter);
+const EventNotifier = new Notifier();
+
+/**
+ * Utilities
+ */
+
+
+/**
+ * YouTube Channel Query
+ */
+function queryYoutube() {
   channelVideos.allUploads(channelName)
   .then((videos) => {
 
-    var videoList = [];
-    var i = 0;
+    let videoList = [];
+    let i = 0;
 
-    // Setup the cache
-    flatCache.clearCacheById('cacheId');
-    cache.setKey('key', { ids: videoList });
-
-    for(var videoItem of videos.items) {
+    for(let videoItem of videos.items) {
       if(videoNumberLimit != 0 && i < videoNumberLimit) {
-        // Video Title: videoItem.snippet.title
-        // Video Watch ID: videoItem.snippet.resourceId.videoId
-        // Log each video added
-        console.log("Added: " + videoItem.snippet.title);
         // Build an array of the video watch IDs
         videoList.push(videoItem.snippet.resourceId.videoId);
-        // Only count videos we find an ID for
-        i++;
+        EventNotifier.emit("video-added");
+        console.log("Added: " + videoItem.snippet.title);
+        i++; // Only count videos we find an ID for
       }
     }
 
+    // Store the watch ids
+    cache.setKey("video-ids", { ids: videoList });
     // All done now
-    console.log("All done adding videos!");
-    console.log( cache.all() );
+    console.log("\n" + i + "YouTube videos added from channel..." + "\n");
+    // Save the new array
+    cache.save( true );
+    // Bye now
+    return EventNotifier.emit('video-list-complete');
 
   }, (err) => {
     // Rejected
@@ -46,14 +63,59 @@ function queryVideosList() {
   })
 }
 
-async function callTheChannel() {
-  console.log("Ring, ring ...");
-  return await queryVideosList();
+/**
+ * Caption Query
+ */
+function captionQuery(videoListArray) {
+  console.log("Requesting captions...");
+
+  for(let id of videoListArray.ids) {
+    getYoutubeSubtitles(id, {type: "auto"})
+    .then((data) => {
+  
+      let wordArray = [];
+
+      for(let captions of data) {
+        for(let wordAndTime of captions.words) {
+          if(wordAndTime.word != 0) {
+            wordArray.push(wordAndTime.word);
+          }
+        }
+      }
+
+    // Cache
+    cache.setKey("captions", { words: wordArray });
+    cache.save( true );
+  
+    }, (err) => {
+      console.log("Error: " + err);
+    });
+  }
+
+  // Done
+  return EventNotifier.emit("word-list-complete");
+}
+
+async function init() {
+  console.log("\n" + "Calling " + channelName + "'s YouTube Channel for their last" + videoNumberLimit + "videos..." + "\n");
+  cacheCore.clearCacheById("collection"); // Clear the cache
+  return await queryYoutube();
 }
 
 /**
  * Run
  */
-setTimeout(()=>{
-  callTheChannel();
-});
+init();
+
+EventNotifier.on("video-list-complete", () => {
+  let videos = cache.getKey("video-ids");
+  captionQuery(videos);
+});  
+
+EventNotifier.on("word-list-complete", () => {
+  let captions = cache.getKey("captions");
+  let wordCount = captions.words.length;
+
+  console.log(wordCount + "" + "\n");
+  console.log(captions.words + "\n"); // Generally followed by errors printed to the console, if any
+});  
