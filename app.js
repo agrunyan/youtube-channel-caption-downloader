@@ -38,7 +38,7 @@ function queryVideosList() {
 
     // All done now
     console.log("All done adding videos!");
-    return true;
+    console.log( cache.all() );
 
   }, (err) => {
     // Rejected
@@ -48,10 +48,12 @@ function queryVideosList() {
 
 async function callTheChannel() {
   console.log("Ring, ring ...");
-  var x = await queryVideosList();
-
-  console.log(x);
-
+  return await queryVideosList();
 }
 
-callTheChannel();
+/**
+ * Run
+ */
+setTimeout(()=>{
+  callTheChannel();
+});
