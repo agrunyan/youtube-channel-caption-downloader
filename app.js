@@ -1,30 +1,29 @@
-"use strict";
 
-/**
- * Import the other Node packages
- */
 let channelVideos = require("yt-channel-videos")('AIzaSyCY7gLGo-iqtU6N2XsbKNA4mrmZPG02MI8');
 let getYoutubeSubtitles = require("@joegesualdo/get-youtube-subtitles-node");
 let cacheCore = require("flat-cache");
 let cache = cacheCore.load("collection");
-let sentiment = require("sentiyapa.js");
-let sentimentAnalyzer = new sentiment.Sentiyapa(); // Sentiment analysis
 
 const chalk = require("chalk");
 const EventEmitter = require("events");
 const util = require("util");
 const log = console.log;
 
-sentimentAnalyzer.init();
+/**
+ * AFINN is a list of English words rated for valence with an integer
+ * between minus five (negative) and plus five (positive).
+ */
+let Sentiment = require("sentiment");
+let sentiment = new Sentiment();
 
 /**
  * App Settings
  * 
  * YouTube channels to test with:
- * PowerfulJRE, presonusaudio, MichaelSealey, PowerfulJRE or SpectreSoundStudios
+ * PowerfulJRE, presonusaudio, MichaelSealey, or SpectreSoundStudios
  * 
  */
-let videoNumberLimit = 25;
+let videoNumberLimit = 3;
 let channelName = "MichaelSealey"; 
 
 /**
@@ -35,7 +34,7 @@ const numberWithCommas = (x) => {
 }
 
 async function init() {
-  await app();
+  return await app();
 }
 
 /**
@@ -50,10 +49,15 @@ const EventNotifier = new Notifier();
 // Runs when the word array built from the captions is finished
 EventNotifier.on("words-array-ready", () => {
   let cachedWords = cache.getKey("word-array");  // Returns the cache object with an array of words
-  let wordString = cachedWords.join(" ");
-  let wordScore = sentimentAnalyzer.score(wordString);
+  let wordString = cachedWords.words.join(" ");
+  let analyzer = sentiment.analyze(wordString);
 
-  return console.log(wordScore);
+  log("\n");
+  log("Score: " + analyzer.score);
+  log("Comparative Score: " + analyzer.comparative);
+  log("Words Recognized: " + analyzer.words.length);
+  
+  return;
 }); 
 
 /**
@@ -101,7 +105,7 @@ function app() {
         }
   
         // For each round
-        log("So far " + chalk.green(numberWithCommas(wordArray.length)) + " words have been found."); 
+        log("So far " + chalk.blue(numberWithCommas(wordArray.length)) + " words have been found."); 
         i++;
   
         // Exit when finished

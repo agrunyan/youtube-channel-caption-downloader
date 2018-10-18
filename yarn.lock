@@ -1164,10 +1164,10 @@ sbv@^1.0.1:
   dependencies:
     fs "0.0.1-security"
 
-sentiyapa.js@^0.0.1:
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/sentiyapa.js/-/sentiyapa.js-0.0.1.tgz#5e2d3ae473f8ca7edc8bd154cbcc57f2994e0876"
-  integrity sha1-Xi065HP4yn7ci9FUy8xX8plOCHY=
+sentiment@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/sentiment/-/sentiment-5.0.1.tgz#425030b2e8564281bb6f239e31dac4761315362e"
+  integrity sha512-MSYs0mZKrBSsRTzou2hKlWuM6jQAm0AtFqAVtaRlqxjaxCTlVwTMz65VDeW9ov3aCcPM0Cvxcn5JnBo1mtreqg==
 
 signal-exit@^3.0.0:
   version "3.0.2"
