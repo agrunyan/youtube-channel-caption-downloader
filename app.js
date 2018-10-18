@@ -3,28 +3,11 @@ let channelVideos = require("yt-channel-videos")('AIzaSyCY7gLGo-iqtU6N2XsbKNA4mr
 let getYoutubeSubtitles = require("@joegesualdo/get-youtube-subtitles-node");
 let cacheCore = require("flat-cache");
 let cache = cacheCore.load("collection");
-
-const chalk = require("chalk");
-const EventEmitter = require("events");
-const util = require("util");
-const log = console.log;
-
-/**
- * AFINN is a list of English words rated for valence with an integer
- * between minus five (negative) and plus five (positive).
- */
 let Sentiment = require("sentiment");
 let sentiment = new Sentiment();
 
-/**
- * App Settings
- * 
- * YouTube channels to test with:
- * PowerfulJRE, presonusaudio, MichaelSealey, or SpectreSoundStudios
- * 
- */
-let videoNumberLimit = 3;
-let channelName = "MichaelSealey"; 
+const chalk = require("chalk");;
+const log = console.log;
 
 /**
  * Utilities
@@ -33,103 +16,123 @@ const numberWithCommas = (x) => {
   return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
-async function init() {
-  return await app();
-}
-
 /**
- * Event Handlers
+ * App Settings
+ * YouTube channels to test with:
+ * PowerfulJRE, presonusaudio, MichaelSealey, or SpectreSoundStudios
  */
-function Notifier() {
-  EventEmitter.call(this);
-}
-util.inherits(Notifier, EventEmitter);
-const EventNotifier = new Notifier();
 
-// Runs when the word array built from the captions is finished
-EventNotifier.on("words-array-ready", () => {
-  let cachedWords = cache.getKey("word-array");  // Returns the cache object with an array of words
-  let wordString = cachedWords.words.join(" ");
-  let analyzer = sentiment.analyze(wordString);
+class CaptionAnalyzer {
+  constructor(x,y) {
+    this.numberOfVideos = x;
+    this.youtubeChannelName = y;
+    this.Run();
+  }
 
-  log("\n");
-  log("Score: " + analyzer.score);
-  log("Comparative Score: " + analyzer.comparative);
-  log("Words Recognized: " + analyzer.words.length);
-  
-  return;
-}); 
-
-/**
- * Business logic
- */
-function app() {
-  log(chalk.yellow("\n" + "Requesting videos from " + channelName + "..." + "\n"));
-
-  channelVideos.allUploads(channelName)
-  .then((videos) => {
-
-    var videoList = [];
-    var x = 0;
-
-    for(let videoItem of videos.items) {
-      if(videoNumberLimit != 0 && x < videoNumberLimit) {
-        // Build an array of the video watch IDs
-        videoList.push(videoItem.snippet.resourceId.videoId);
-        console.log("Added: " + videoItem.snippet.title);
-        x++; // Only count videos we find an ID for
-      }
+  async Run() {
+    if(this.numberOfVideos === "undefined" || this.youtubeChannelName === "undefined") {
+      return console.error("Number of videos and/or channel name is not defined.");
     }
+    return await this.ProcessCaptions();
+  }  
 
-    // Done building array of video IDs
-    log(chalk.green("\n" + "Yay! " + x + " videos added from channel." + "\n"));
+  ProcessCaptions() {
+    /**
+     * Step #1
+     */
+    log(chalk.yellow("\n" + "Requesting videos from " + this.youtubeChannelName + "..." + "\n"));
+
+    channelVideos.allUploads(this.youtubeChannelName)
+      .then((videos) => {
     
-  /**
-   * Caption Query
-   */
-    log(chalk.yellow("Requesting captions..." + "\n"));
-
-    var wordArray = [];
-    var i = 0;
-  
-    for(let id of videoList) {
-      getYoutubeSubtitles(id, {type: "auto"})
-      .then((data) => {
-  
-        for(let captions of data) {
-          for(let wordAndTime of captions.words) {
-            if(wordAndTime.word != 0) {
-              wordArray.push(wordAndTime.word);
-            }
+        var videoList = [];
+        var x = 0;
+    
+        for(let videoItem of videos.items) {
+          if(this.numberOfVideos != 0 && x < this.numberOfVideos) {
+            // Build an array of the video watch IDs
+            videoList.push(videoItem.snippet.resourceId.videoId);
+            let title = videoItem.snippet.title;
+            console.log(chalk.green("#" + (x + 1) + " ") + title.substring(0, 50) + "...");
+            x++; // Only count videos we find an ID for
           }
         }
-  
-        // For each round
-        log("So far " + chalk.blue(numberWithCommas(wordArray.length)) + " words have been found."); 
-        i++;
-  
-        // Exit when finished
-        if(i == videoNumberLimit) {
+    
+      log(chalk.green("\n" + "Yay! " + x + " videos added from channel." + "\n"));
+      log(chalk.yellow("Requesting captions..." + "\n"));
+    
+      /**
+       * Step #2
+       */
 
-          cache.setKey("word-array", { words: wordArray });
-          cache.save(); // This will also clear any previous cache
+      var i = 0;
 
-          return EventNotifier.emit("words-array-ready");
+      for(let id of videoList) {
+        this.RequestCaptions(id, i++);
+      }
+
+    }, (err) => {
+      // Rejected
+      log(err);
+    })
+  }
+
+  RequestCaptions(z, n) {
+    var wordArray = [];
+
+    getYoutubeSubtitles(z, {type: "auto"})
+    .then((data) => {
+
+      for(let captions of data) {
+        for(let wordAndTime of captions.words) {
+          if(wordAndTime.word != 0) {
+            wordArray.push(wordAndTime.word);
+          }
         }
-  
-      }, (err) => {
-        log(chalk.red("Error: " + err));
-        i++; // Even if there aren't captions, still count it
-      })
-    } 
+      }
 
-  }, (err) => {
-    // Rejected
-    console.log(err);
-  })
+      // For each round
+      log("So far " + chalk.blue(numberWithCommas(wordArray.length)) + " words have been found."); 
+
+      // Once we've run through the list of videos, report back
+      if((n + 1) == this.numberOfVideos) {
+        return this.Report(wordArray);
+      }
+
+    }, (err) => {
+      // Log the error
+      log(chalk.red("Error: " + err));
+    })
+  }
+
+  Report(y) {
+    let wordString = y.join(" ");
+
+    /**
+     * AFINN is a list of words rated for valence with an integer between minus five (negative) and plus five
+     * (positive). Sentiment analysis is performed by cross-checking the string tokens(words, emojis) with the
+     * AFINN list and getting their respective scores. The comparative score is simply: sum of each token /
+     * number of tokens.
+     */
+    let analyzer = sentiment.analyze(wordString);
+
+    if(wordString != 0) {
+      var result =
+        "\n" +
+        "\n" + "Score: " + chalk.green(analyzer.score) +
+        "\n" + "Comparative Score: " + chalk.green.underline(analyzer.comparative.toFixed(4)) +
+        "\n" + "Words Recognized: " + chalk.green(analyzer.words.length) +
+        "\n";
+    } else {
+      var result = "\n" + chalk.yellow("Sorry, no captions available to analyze.");
+    }
+    
+    // Final result and end of script
+    return log(result);
+  }
 }
 
 /**
- * App Initialization
+ * Run
  */
-init();
+return new CaptionAnalyzer("10", "SpectreSoundStudios");
