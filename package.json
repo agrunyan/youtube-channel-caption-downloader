@@ -12,11 +12,11 @@
   },
   "dependencies": {
     "@joegesualdo/get-youtube-subtitles-node": "^0.1.0",
+    "chalk": "^2.4.1",
     "flat-cache": "^1.3.0",
     "sbv": "^1.0.1",
+    "sentiyapa.js": "^0.0.1",
     "yt-channel-videos": "^1.1.0"
   },
-  "devDependencies": {
-    "eslint": "^5.7.0"
-  }
+  "devDependencies": {}
 }

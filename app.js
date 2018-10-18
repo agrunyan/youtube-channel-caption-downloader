@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Import the other Node packages
  */
@@ -5,44 +7,117 @@ let channelVideos = require("yt-channel-videos")('AIzaSyCY7gLGo-iqtU6N2XsbKNA4mr
 let getYoutubeSubtitles = require("@joegesualdo/get-youtube-subtitles-node");
 let cacheCore = require("flat-cache");
 let cache = cacheCore.load("collection");
+let sentiment = require("sentiyapa.js");
+let sentimentAnalyzer = new sentiment.Sentiyapa(); // Sentiment analysis
+
+const chalk = require("chalk");
 const EventEmitter = require("events");
 const util = require("util");
+const log = console.log;
+
+sentimentAnalyzer.init();
 
 /**
  * App Settings
+ * 
+ * YouTube channels to test with:
+ * PowerfulJRE, presonusaudio, MichaelSealey, PowerfulJRE or SpectreSoundStudios
+ * 
  */
-let videoNumberLimit = 13;
-// PowerfulJRE, presonusaudio, MichaelSealey, PowerfulJRE or SpectreSoundStudios
-let channelName = "SpectreSoundStudios"; 
+let videoNumberLimit = 25;
+let channelName = "MichaelSealey"; 
 
 /**
- * YouTube Channel Query
+ * Utilities
  */
-function queryYoutube() {
-  console.log("\n" + "Requesting videos from " + channelName + "...");
+const numberWithCommas = (x) => {
+  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+async function init() {
+  await app();
+}
+
+/**
+ * Event Handlers
+ */
+function Notifier() {
+  EventEmitter.call(this);
+}
+util.inherits(Notifier, EventEmitter);
+const EventNotifier = new Notifier();
+
+// Runs when the word array built from the captions is finished
+EventNotifier.on("words-array-ready", () => {
+  let cachedWords = cache.getKey("word-array");  // Returns the cache object with an array of words
+  let wordString = cachedWords.join(" ");
+  let wordScore = sentimentAnalyzer.score(wordString);
+
+  return console.log(wordScore);
+}); 
+
+/**
+ * Business logic
+ */
+function app() {
+  log(chalk.yellow("\n" + "Requesting videos from " + channelName + "..." + "\n"));
 
   channelVideos.allUploads(channelName)
   .then((videos) => {
 
-    let videoList = [];
-    let i = 0;
+    var videoList = [];
+    var x = 0;
 
     for(let videoItem of videos.items) {
-      if(videoNumberLimit != 0 && i < videoNumberLimit) {
+      if(videoNumberLimit != 0 && x < videoNumberLimit) {
         // Build an array of the video watch IDs
         videoList.push(videoItem.snippet.resourceId.videoId);
-        i++; // Only count videos we find an ID for
+        console.log("Added: " + videoItem.snippet.title);
+        x++; // Only count videos we find an ID for
       }
     }
 
-    // Store the watch ids
-    cache.setKey("video-ids", { ids: videoList });
-    // All done now
-    console.log("Success! " + i + " videos added from channel." + "\n");
-    // Save the new array
-    cache.save( true );
-    // Exit
-    EventNotifier.emit("video-list-complete");
+    // Done building array of video IDs
+    log(chalk.green("\n" + "Yay! " + x + " videos added from channel." + "\n"));
+    
+  /**
+   * Caption Query
+   */
+    log(chalk.yellow("Requesting captions..." + "\n"));
+
+    var wordArray = [];
+    var i = 0;
+  
+    for(let id of videoList) {
+      getYoutubeSubtitles(id, {type: "auto"})
+      .then((data) => {
+  
+        for(let captions of data) {
+          for(let wordAndTime of captions.words) {
+            if(wordAndTime.word != 0) {
+              wordArray.push(wordAndTime.word);
+            }
+          }
+        }
+  
+        // For each round
+        log("So far " + chalk.green(numberWithCommas(wordArray.length)) + " words have been found."); 
+        i++;
+  
+        // Exit when finished
+        if(i == videoNumberLimit) {
+
+          cache.setKey("word-array", { words: wordArray });
+          cache.save(); // This will also clear any previous cache
+
+          return EventNotifier.emit("words-array-ready");
+        }
+  
+      }, (err) => {
+        log(chalk.red("Error: " + err));
+        i++; // Even if there aren't captions, still count it
+      })
+    } 
 
   }, (err) => {
     // Rejected
@@ -51,71 +126,6 @@ function queryYoutube() {
 }
 
 /**
- * Caption Query
- */
-function captionQuery(videoListArray, callBack) {
-  console.log("Requesting captions..." + "\n");
-
-  let wordArray = [];
-
-  for(let id of videoListArray.ids) {
-    getYoutubeSubtitles(id, {type: "auto"})
-    .then((data) => {
-
-      for(let captions of data) {
-        for(let wordAndTime of captions.words) {
-          if(wordAndTime.word != 0) {
-            wordArray.push(wordAndTime.word);
-          }
-        }
-      }
-
-      // For each round
-      console.log("So far " + wordArray.length + " words have been found."); 
-
-    }, (err) => {
-      console.log("Error: " + err);
-    })
-    .then(_ => new Promise(resolve =>
-      setTimeout(function () {
-        resolve();
-      }, Math.random() * 1000)
-    ));
-  }
-
-  callBack(wordArray);
-}
-
-async function init() {
-  return await queryYoutube();
-}
-
-/**
  * App Initialization
  */
 init();
-
-/**
- * Utilities
- */
-util.inherits(Notifier, EventEmitter);
-
-/**
- * Event Handlers
- */
-function Notifier() {
-  EventEmitter.call(this);
-}
-
-const EventNotifier = new Notifier();
-
-// Wait for the fun
-EventNotifier.on("video-list-complete", () => {
-  let list = cache.getKey("video-ids");
-
-  captionQuery(list, function(wordArray) {
-    console.log( wordArray );
-  });
-
-});  
-
